@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -36,21 +37,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password.isEmpty ||
         confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+        const SnackBar(
+          content: Text('Veuillez remplir tous les champs'),
+        ),
       );
       return;
     }
 
     if (password != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Les mots de passe ne correspondent pas')),
+        const SnackBar(
+          content: Text('Les mots de passe ne correspondent pas'),
+        ),
       );
       return;
     }
 
     if (password.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Le mot de passe doit contenir au moins 6 caractères')),
+        const SnackBar(
+          content: Text(
+            'Le mot de passe doit contenir au moins 6 caractères',
+          ),
+        ),
       );
       return;
     }
@@ -66,7 +75,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: password,
       );
 
-      await userCredential.user?.updateDisplayName(name);
+      User user = userCredential.user!;
+
+      await user.updateDisplayName(name);
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .set({
+        'uid': user.uid,
+        'name': name,
+        'email': email,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
       if (!mounted) return;
 
@@ -96,7 +117,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Une erreur est survenue')),
+        SnackBar(content: Text('Erreur : $e')),
       );
     } finally {
       if (mounted) {
