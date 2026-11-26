@@ -1,7 +1,114 @@
-import 'package:flutter/material.dart';
 
-class AddExpenseScreen extends StatelessWidget {
-  const AddExpenseScreen({super.key});
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class AddExpenseScreen extends StatefulWidget {
+  final String groupId;
+
+  const AddExpenseScreen({
+    super.key,
+    required this.groupId,
+  });
+
+  @override
+  State<AddExpenseScreen> createState() => _AddExpenseScreenState();
+}
+
+class _AddExpenseScreenState extends State<AddExpenseScreen> {
+  final titleController = TextEditingController();
+  final amountController = TextEditingController();
+  final descriptionController = TextEditingController();
+
+  DateTime selectedDate = DateTime.now();
+  bool isLoading = false;
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    amountController.dispose();
+    descriptionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> selectDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2035),
+    );
+
+    if (date != null) {
+      setState(() {
+        selectedDate = date;
+      });
+    }
+  }
+
+  Future<void> saveExpense() async {
+    final title = titleController.text.trim();
+    final amountText = amountController.text.trim();
+    final description = descriptionController.text.trim();
+
+    final amount = double.tryParse(amountText);
+
+    if (title.isEmpty || amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Veuillez saisir un titre et un montant valide'),
+        ),
+      );
+      return;
+    }
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('expenses')
+          .add({
+        'title': title,
+        'amount': amount,
+        'description': description,
+        'date': Timestamp.fromDate(selectedDate),
+        'createdBy': user.uid,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Dépense enregistrée avec succès !'),
+        ),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur : $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +118,6 @@ class AddExpenseScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(25),
         child: Column(
@@ -26,8 +132,9 @@ class AddExpenseScreen extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
                 labelText: 'Titre de la dépense',
                 prefixIcon: Icon(Icons.edit),
                 border: OutlineInputBorder(),
@@ -36,9 +143,12 @@ class AddExpenseScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            const TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+            TextField(
+              controller: amountController,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
                 labelText: 'Montant (DT)',
                 prefixIcon: Icon(Icons.attach_money),
                 border: OutlineInputBorder(),
@@ -47,8 +157,10 @@ class AddExpenseScreen extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            const TextField(
-              decoration: InputDecoration(
+            TextField(
+              controller: descriptionController,
+              maxLines: 3,
+              decoration: const InputDecoration(
                 labelText: 'Description',
                 prefixIcon: Icon(Icons.description),
                 border: OutlineInputBorder(),
@@ -59,19 +171,14 @@ class AddExpenseScreen extends StatelessWidget {
 
             TextField(
               readOnly: true,
-              decoration: const InputDecoration(
+              onTap: selectDate,
+              decoration: InputDecoration(
                 labelText: 'Date de la dépense',
-                prefixIcon: Icon(Icons.calendar_today),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.calendar_today),
+                border: const OutlineInputBorder(),
+                hintText:
+                '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
               ),
-              onTap: () async {
-                await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime(2035),
-                );
-              },
             ),
 
             const SizedBox(height: 30),
@@ -80,12 +187,16 @@ class AddExpenseScreen extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: isLoading ? null : saveExpense,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Enregistrer la dépense'),
+                child: isLoading
+                    ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+                    : const Text('Enregistrer la dépense'),
               ),
             ),
           ],

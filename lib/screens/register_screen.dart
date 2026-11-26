@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,6 +17,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final confirmPasswordController = TextEditingController();
 
   bool isLoading = false;
+  bool hidePassword = true;
+  bool hideConfirmPassword = true;
 
   @override
   void dispose() {
@@ -128,94 +131,185 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  InputDecoration inputStyle(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: const Color(0xFF2563EB)),
+      filled: true,
+      fillColor: const Color(0xFFF8FAFC),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(
+          color: Color(0xFF2563EB),
+          width: 2,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+
       appBar: AppBar(
         title: const Text('Créer un compte'),
-        foregroundColor: Colors.white,
         backgroundColor: const Color(0xFF2563EB),
+        foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(25),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 25),
 
-              const Icon(
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(25),
+        child: Column(
+          children: [
+
+            const SizedBox(height: 15),
+
+            Container(
+              width: 100,
+              height: 100,
+              decoration: const BoxDecoration(
+                color: Color(0xFFDBEAFE),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
                 Icons.person_add_alt_1,
-                size: 80,
+                size: 55,
                 color: Color(0xFF2563EB),
               ),
+            ),
 
-              const SizedBox(height: 25),
+            const SizedBox(height: 20),
 
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom complet',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
-                ),
+            const Text(
+              'Créer un compte',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
               ),
+            ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 8),
 
-              TextField(
-                controller: emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Adresse e-mail',
-                  prefixIcon: Icon(Icons.email),
-                  border: OutlineInputBorder(),
-                ),
+            const Text(
+              'Rejoignez-nous et gérez vos dépenses facilement.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.black54,
               ),
+            ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Mot de passe',
-                  prefixIcon: Icon(Icons.lock),
-                  border: OutlineInputBorder(),
-                ),
+            TextField(
+              controller: nameController,
+              decoration: inputStyle(
+                'Nom complet',
+                Icons.person,
               ),
+            ),
 
-              const SizedBox(height: 20),
+            const SizedBox(height: 18),
 
-              TextField(
-                controller: confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirmer le mot de passe',
-                  prefixIcon: Icon(Icons.lock_outline),
-                  border: OutlineInputBorder(),
-                ),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: inputStyle(
+                'Adresse e-mail',
+                Icons.email,
               ),
+            ),
 
-              const SizedBox(height: 30),
+            const SizedBox(height: 18),
 
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : register,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
-                    foregroundColor: Colors.white,
+            TextField(
+              controller: passwordController,
+              obscureText: hidePassword,
+              decoration: inputStyle(
+                'Mot de passe',
+                Icons.lock,
+              ).copyWith(
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    hidePassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
                   ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(
-                    color: Colors.white,
-                  )
-                      : const Text('Créer mon compte'),
+                  onPressed: () {
+                    setState(() {
+                      hidePassword = !hidePassword;
+                    });
+                  },
                 ),
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 18),
+
+            TextField(
+              controller: confirmPasswordController,
+              obscureText: hideConfirmPassword,
+              decoration: inputStyle(
+                'Confirmer le mot de passe',
+                Icons.lock_outline,
+              ).copyWith(
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    hideConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      hideConfirmPassword = !hideConfirmPassword;
+                    });
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                onPressed: isLoading ? null : register,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                child: isLoading
+                    ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+                    : const Text(
+                  'Créer mon compte',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+          ],
         ),
       ),
     );

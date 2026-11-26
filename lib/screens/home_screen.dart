@@ -1,10 +1,42 @@
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'groups_screen.dart';
 import 'expenses_screen.dart';
 import 'balances_screen.dart';
 import 'profile_screen.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<double> getTotalExpenses() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return 0;
+
+    double total = 0;
+
+    final groups = await FirebaseFirestore.instance
+        .collection('groups')
+        .where('memberIds', arrayContains: user.uid)
+        .get();
+
+    for (var group in groups.docs) {
+      final expenses = await FirebaseFirestore.instance
+          .collection('groups')
+          .doc(group.id)
+          .collection('expenses')
+          .get();
+
+      for (var expense in expenses.docs) {
+        total += (expense.data()['amount'] as num).toDouble();
+      }
+    }
+
+    return total;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +83,12 @@ class HomeScreen extends StatelessWidget {
 
             Card(
               color: const Color(0xFF2563EB),
-              child: const Padding(
-                padding: EdgeInsets.all(20),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Total des dépenses',
                       style: TextStyle(
                         color: Colors.white,
@@ -64,15 +96,36 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
 
-                    SizedBox(height: 12),
+                    const SizedBox(height: 12),
 
-                    Text(
-                      '0.00 DT',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    FutureBuilder<double>(
+                      future: getTotalExpenses(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const CircularProgressIndicator(
+                            color: Colors.white,
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return const Text(
+                            'Erreur de chargement',
+                            style: TextStyle(color: Colors.white),
+                          );
+                        }
+
+                        final total = snapshot.data ?? 0;
+
+                        return Text(
+                          '${total.toStringAsFixed(2)} DT',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

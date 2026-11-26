@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'create_group_screen.dart';
 import 'group_details_screen.dart';
 
@@ -14,13 +15,16 @@ class GroupsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
+
       appBar: AppBar(
         title: const Text('Mes groupes'),
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -31,7 +35,9 @@ class GroupsScreen extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 10),
+
             const Text(
               'Gérez vos groupes et partagez vos dépenses.',
               style: TextStyle(
@@ -39,7 +45,9 @@ class GroupsScreen extends StatelessWidget {
                 color: Colors.black54,
               ),
             ),
+
             const SizedBox(height: 25),
+
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -48,7 +56,8 @@ class GroupsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const CreateGroupScreen(),
+                      builder: (context) =>
+                      const CreateGroupScreen(),
                     ),
                   );
                 },
@@ -60,15 +69,23 @@ class GroupsScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 25),
+
             Expanded(
               child: user == null
-                  ? const Center(child: Text('Veuillez vous connecter'))
-                  : StreamBuilder<QuerySnapshot>(
+                  ? const Center(
+                child: Text('Veuillez vous connecter'),
+              )
+                  : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
                     .collection('groups')
-                    .where('memberIds', arrayContains: user.uid)
+                    .where(
+                  'memberIds',
+                  arrayContains: user.uid,
+                )
                     .snapshots(),
+
                 builder: (context, snapshot) {
                   if (snapshot.connectionState ==
                       ConnectionState.waiting) {
@@ -79,7 +96,9 @@ class GroupsScreen extends StatelessWidget {
 
                   if (snapshot.hasError) {
                     return Center(
-                      child: Text('Erreur : ${snapshot.error}'),
+                      child: Text(
+                        'Erreur : ${snapshot.error}',
+                      ),
                     );
                   }
 
@@ -107,15 +126,20 @@ class GroupsScreen extends StatelessWidget {
                     );
                   }
 
+                  final groups = snapshot.data!.docs;
+
                   return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
+                    itemCount: groups.length,
+
                     itemBuilder: (context, index) {
-                      final group = snapshot.data!.docs[index];
-                      final data =
-                      group.data() as Map<String, dynamic>;
+                      final group = groups[index];
+                      final data = group.data();
 
                       return Card(
-                        margin: const EdgeInsets.only(bottom: 15),
+                        margin: const EdgeInsets.only(
+                          bottom: 15,
+                        ),
+
                         child: ListTile(
                           leading: const CircleAvatar(
                             backgroundColor: Color(0xFFDBEAFE),
@@ -124,25 +148,31 @@ class GroupsScreen extends StatelessWidget {
                               color: Color(0xFF2563EB),
                             ),
                           ),
+
                           title: Text(
                             data['name'] ?? 'Sans nom',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+
                           subtitle: Text(
                             data['description'] ?? '',
                           ),
+
                           trailing: const Icon(
                             Icons.arrow_forward_ios,
                             size: 18,
                           ),
+
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
-                                const GroupDetailsScreen(),
+                                    GroupDetailsScreen(
+                                      groupId: group.id,
+                                    ),
                               ),
                             );
                           },
