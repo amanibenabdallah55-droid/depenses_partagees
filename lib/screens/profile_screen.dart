@@ -63,6 +63,17 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Récupérer les informations de l'utilisateur connecté
+    final user = FirebaseAuth.instance.currentUser;
+
+    final String userName =
+    (user?.displayName?.trim().isNotEmpty ?? false)
+        ? user!.displayName!.trim()
+        : 'Nom non disponible';
+
+    final String userEmail =
+        user?.email ?? 'Email non disponible';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
@@ -88,17 +99,17 @@ class ProfileScreen extends StatelessWidget {
 
             const SizedBox(height: 15),
 
-            const Text(
-              'Nom de l’utilisateur',
-              style: TextStyle(
+            Text(
+              userName,
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
 
-            const Text(
-              'utilisateur@email.com',
-              style: TextStyle(
+            Text(
+              userEmail,
+              style: const TextStyle(
                 color: Colors.black54,
               ),
             ),
