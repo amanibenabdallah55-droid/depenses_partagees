@@ -17,9 +17,13 @@ class GroupsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7FB),
 
       appBar: AppBar(
-        title: const Text('Mes groupes'),
+        title: const Text(
+          'Mes groupes',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
 
       body: Padding(
@@ -31,17 +35,18 @@ class GroupsScreen extends StatelessWidget {
             const Text(
               'Mes groupes',
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
             const Text(
-              'Gérez vos groupes et partagez vos dépenses.',
+              'Retrouvez et gérez tous vos groupes.',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 color: Colors.black54,
               ),
             ),
@@ -50,7 +55,7 @@ class GroupsScreen extends StatelessWidget {
 
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 52,
               child: ElevatedButton.icon(
                 onPressed: () {
                   Navigator.push(
@@ -62,22 +67,44 @@ class GroupsScreen extends StatelessWidget {
                   );
                 },
                 icon: const Icon(Icons.add),
-                label: const Text('Créer un groupe'),
+                label: const Text(
+                  'Créer un groupe',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 28),
+
+            const Text(
+              'Liste des groupes',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+
+            const SizedBox(height: 15),
 
             Expanded(
               child: user == null
                   ? const Center(
                 child: Text('Veuillez vous connecter'),
               )
-                  : StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  : StreamBuilder<
+                  QuerySnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
                     .collection('groups')
                     .where(
@@ -104,20 +131,39 @@ class GroupsScreen extends StatelessWidget {
 
                   if (!snapshot.hasData ||
                       snapshot.data!.docs.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment:
+                        MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.groups,
-                            size: 80,
-                            color: Colors.grey,
+                          Container(
+                            padding: const EdgeInsets.all(25),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFDBEAFE),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.groups_outlined,
+                              size: 55,
+                              color: Color(0xFF2563EB),
+                            ),
                           ),
-                          SizedBox(height: 15),
-                          Text(
+
+                          const SizedBox(height: 18),
+
+                          const Text(
                             'Aucun groupe pour le moment',
                             style: TextStyle(
                               fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          const Text(
+                            'Créez votre premier groupe !',
+                            style: TextStyle(
                               color: Colors.black54,
                             ),
                           ),
@@ -137,15 +183,34 @@ class GroupsScreen extends StatelessWidget {
 
                       return Card(
                         margin: const EdgeInsets.only(
-                          bottom: 15,
+                          bottom: 14,
+                        ),
+                        elevation: 1,
+                        color: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                          BorderRadius.circular(16),
                         ),
 
                         child: ListTile(
-                          leading: const CircleAvatar(
-                            backgroundColor: Color(0xFFDBEAFE),
-                            child: Icon(
-                              Icons.groups,
+                          contentPadding:
+                          const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+
+                          leading: Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFDBEAFE),
+                              borderRadius:
+                              BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.groups_rounded,
                               color: Color(0xFF2563EB),
+                              size: 27,
                             ),
                           ),
 
@@ -153,16 +218,29 @@ class GroupsScreen extends StatelessWidget {
                             data['name'] ?? 'Sans nom',
                             style: const TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
 
-                          subtitle: Text(
-                            data['description'] ?? '',
+                          subtitle: Padding(
+                            padding:
+                            const EdgeInsets.only(top: 5),
+                            child: Text(
+                              data['description'] ?? '',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
 
                           trailing: const Icon(
                             Icons.arrow_forward_ios,
-                            size: 18,
+                            size: 17,
+                            color: Color(0xFF2563EB),
                           ),
 
                           onTap: () {

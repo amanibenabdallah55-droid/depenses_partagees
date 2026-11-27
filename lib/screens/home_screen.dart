@@ -38,195 +38,279 @@ class HomeScreen extends StatelessWidget {
     return total;
   }
 
+  Widget menuCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Card(
+      elevation: 1,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.all(14),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Icon(
+            icon,
+            color: const Color(0xFF2563EB),
+            size: 27,
+          ),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            color: Color(0xFF1E293B),
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 15,
+          color: Colors.grey,
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
 
       appBar: AppBar(
-        title: const Text('Dépenses Partagées'),
+        title: const Text(
+          'Dépenses Partagées',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications),
-          ),
-        ],
+        elevation: 0,
       ),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
+            const SizedBox(height: 10),
+
             const Text(
               'Bienvenue ! 👋',
               style: TextStyle(
-                fontSize: 25,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
               ),
             ),
 
             const SizedBox(height: 8),
 
             const Text(
-              'Voici un aperçu de vos dépenses.',
+              'Gérez et suivez facilement vos dépenses.',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 color: Colors.black54,
               ),
             ),
 
             const SizedBox(height: 25),
 
-            Card(
-              color: const Color(0xFF2563EB),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Total des dépenses',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    FutureBuilder<double>(
-                      future: getTotalExpenses(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const CircularProgressIndicator(
-                            color: Colors.white,
-                          );
-                        }
-
-                        if (snapshot.hasError) {
-                          return const Text(
-                            'Erreur de chargement',
-                            style: TextStyle(color: Colors.white),
-                          );
-                        }
-
-                        final total = snapshot.data ?? 0;
-
-                        return Text(
-                          '${total.toStringAsFixed(2)} DT',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
-                    ),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF2563EB),
+                    Color(0xFF1D4ED8),
                   ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withOpacity(0.20),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Total des dépenses',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.account_balance_wallet,
+                          color: Colors.white,
+                          size: 27,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  FutureBuilder<double>(
+                    future: getTotalExpenses(),
+
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const CircularProgressIndicator(
+                          color: Colors.white,
+                        );
+                      }
+
+                      if (snapshot.hasError) {
+                        return const Text(
+                          'Erreur de chargement',
+                          style: TextStyle(color: Colors.white),
+                        );
+                      }
+
+                      final total = snapshot.data ?? 0;
+
+                      return Text(
+                        '${total.toStringAsFixed(2)} DT',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Montant total de vos groupes',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
               ),
             ),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
 
             const Text(
               'Menu principal',
               style: TextStyle(
                 fontSize: 21,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
               ),
             ),
 
             const SizedBox(height: 15),
 
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.groups,
-                  color: Color(0xFF2563EB),
-                  size: 35,
-                ),
-                title: const Text('Mes groupes'),
-                subtitle: const Text('Gérer vos groupes'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const GroupsScreen(),
-                    ),
-                  );
-                },
-              ),
+            menuCard(
+              icon: Icons.groups_rounded,
+              title: 'Mes groupes',
+              subtitle: 'Gérer vos groupes',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const GroupsScreen(),
+                  ),
+                );
+              },
             ),
 
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.receipt_long,
-                  color: Color(0xFF2563EB),
-                  size: 35,
-                ),
-                title: const Text('Mes dépenses'),
-                subtitle: const Text('Consulter vos dépenses'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ExpensesScreen(),
-                    ),
-                  );
-                },
-              ),
+            const SizedBox(height: 10),
+
+            menuCard(
+              icon: Icons.receipt_long_rounded,
+              title: 'Mes dépenses',
+              subtitle: 'Consulter vos dépenses',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ExpensesScreen(),
+                  ),
+                );
+              },
             ),
 
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.account_balance_wallet,
-                  color: Color(0xFF2563EB),
-                  size: 35,
-                ),
-                title: const Text('Mes soldes'),
-                subtitle: const Text('Consulter vos dettes'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BalancesScreen(),
-                    ),
-                  );
-                },
-              ),
+            const SizedBox(height: 10),
+
+            menuCard(
+              icon: Icons.account_balance_wallet_rounded,
+              title: 'Mes soldes',
+              subtitle: 'Consulter vos dettes',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const BalancesScreen(),
+                  ),
+                );
+              },
             ),
 
-            Card(
-              child: ListTile(
-                leading: const Icon(
-                  Icons.person,
-                  color: Color(0xFF2563EB),
-                  size: 35,
-                ),
-                title: const Text('Mon profil'),
-                subtitle: const Text('Gérer votre compte'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ProfileScreen(),
-                    ),
-                  );
-                },
-              ),
+            const SizedBox(height: 10),
+
+            menuCard(
+              icon: Icons.person_rounded,
+              title: 'Mon profil',
+              subtitle: 'Gérer votre compte',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              },
             ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),

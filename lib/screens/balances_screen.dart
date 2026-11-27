@@ -25,10 +25,48 @@ class _BalancesScreenState extends State<BalancesScreen> {
     loadBalances();
   }
 
+  // Convert an amount to integer millimes.
+  int getAmountMillimes(Map<String, dynamic> data) {
+    final value = data['amountMillimes'];
+
+    if (value is num) {
+      return value.round();
+    }
+
+    final oldAmount = data['amount'];
+
+    if (oldAmount is num) {
+      return (oldAmount * 1000).round();
+    }
+
+    return 0;
+  }
+
+  // Calculate equal shares without losing millimes.
+  Map<String, int> calculateEqualShares(
+      int amount,
+      List<String> participants,
+      ) {
+    final Map<String, int> shares = {};
+
+    if (participants.isEmpty) return shares;
+
+    final baseShare = amount ~/ participants.length;
+    final remainder = amount % participants.length;
+
+    for (int i = 0; i < participants.length; i++) {
+      shares[participants[i]] = baseShare + (i < remainder ? 1 : 0);
+    }
+
+    return shares;
+  }
+
   Future<void> loadBalances() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
+      if (!mounted) return;
+
       setState(() {
         isLoading = false;
         errorMessage = 'Veuillez vous connecter';
@@ -47,66 +85,88 @@ class _BalancesScreenState extends State<BalancesScreen> {
           .where('memberIds', arrayContains: user.uid)
           .get();
 
-      double totalToPay = 0;
-      double totalToReceive = 0;
+      int totalToPayMillimes = 0;
+      int totalToReceiveMillimes = 0;
 
       List<Map<String, dynamic>> results = [];
 
       for (final group in groupsSnapshot.docs) {
         final groupData = group.data();
 
-        final String groupName =
-            groupData['name'] ?? 'Sans nom';
+        final String groupName = groupData['name'] ?? 'Sans nom';
 
         final List<String> members =
         List<String>.from(groupData['memberIds'] ?? []);
 
         if (members.isEmpty) continue;
 
-        final expensesSnapshot = await group.reference
-            .collection('expenses')
-            .get();
+        final expensesSnapshot =
+        await group.reference.collection('expenses').get();
 
-        double groupBalance = 0;
+        int groupBalanceMillimes = 0;
 
         for (final expense in expensesSnapshot.docs) {
           final expenseData = expense.data();
 
-          final amountValue = expenseData['amount'];
+          final int amount = getAmountMillimes(expenseData);
 
-          if (amountValue is! num) continue;
+          if (amount <= 0) continue;
 
-          final double amount = amountValue.toDouble();
-
+          // The person who paid.
           final String payerId =
-              expenseData['createdBy'] ?? '';
+              expenseData['payeur'] ?? expenseData['createdBy'] ?? '';
 
-          final double share = amount / members.length;
+          // Get the participants of this expense.
+          List<String> participants =
+          List<String>.from(expenseData['participants'] ?? []);
 
-          if (payerId == user.uid) {
-            groupBalance += amount - share;
-          } else {
-            groupBalance -= share;
+          // Compatibility with old expenses.
+          if (participants.isEmpty) {
+            participants = members;
           }
+
+          // Get each participant's share.
+          Map<String, int> shares = {};
+
+          final savedParts = expenseData['parts'];
+
+          if (savedParts is Map && savedParts.isNotEmpty) {
+            savedParts.forEach((key, value) {
+              if (value is num) {
+                shares[key.toString()] = value.round();
+              }
+            });
+          } else {
+            // Old expenses or expenses without saved shares.
+            shares = calculateEqualShares(amount, participants);
+          }
+
+          // Add the amount paid by the current user.
+          if (payerId == user.uid) {
+            groupBalanceMillimes += amount;
+          }
+
+          // Subtract the current user's share.
+          groupBalanceMillimes -= shares[user.uid] ?? 0;
         }
 
-        if (groupBalance < -0.001) {
-          totalToPay += groupBalance.abs();
-        } else if (groupBalance > 0.001) {
-          totalToReceive += groupBalance;
+        if (groupBalanceMillimes < 0) {
+          totalToPayMillimes += groupBalanceMillimes.abs();
+        } else if (groupBalanceMillimes > 0) {
+          totalToReceiveMillimes += groupBalanceMillimes;
         }
 
         results.add({
           'name': groupName,
-          'balance': groupBalance,
+          'balance': groupBalanceMillimes / 1000,
         });
       }
 
       if (!mounted) return;
 
       setState(() {
-        amountToPay = totalToPay;
-        amountToReceive = totalToReceive;
+        amountToPay = totalToPayMillimes / 1000;
+        amountToReceive = totalToReceiveMillimes / 1000;
         groupBalances = results;
         isLoading = false;
       });
@@ -124,7 +184,6 @@ class _BalancesScreenState extends State<BalancesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-
       appBar: AppBar(
         title: const Text('Mes soldes'),
         backgroundColor: const Color(0xFF2563EB),
@@ -137,21 +196,14 @@ class _BalancesScreenState extends State<BalancesScreen> {
           ),
         ],
       ),
-
       body: isLoading
-          ? const Center(
-        child: CircularProgressIndicator(),
-      )
+          ? const Center(child: CircularProgressIndicator())
           : errorMessage != null
-          ? Center(
-        child: Text(errorMessage!),
-      )
+          ? Center(child: Text(errorMessage!))
           : Padding(
         padding: const EdgeInsets.all(20),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-
           children: [
             const Text(
               'Résumé des soldes',
@@ -160,22 +212,21 @@ class _BalancesScreenState extends State<BalancesScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-
             const SizedBox(height: 20),
 
             Card(
               child: ListTile(
                 leading: const CircleAvatar(
-                  backgroundColor: Color(0xFFD1FAE5),
+                  backgroundColor: Color(0xFFFEE2E2),
                   child: Icon(
                     Icons.arrow_downward,
-                    color: Colors.green,
+                    color: Colors.red,
                   ),
                 ),
                 title: const Text('Vous devez'),
                 subtitle: const Text('Montant à payer'),
                 trailing: Text(
-                  '${amountToPay.toStringAsFixed(2)} DT',
+                  '${amountToPay.toStringAsFixed(3)} DT',
                   style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.bold,
@@ -189,16 +240,16 @@ class _BalancesScreenState extends State<BalancesScreen> {
             Card(
               child: ListTile(
                 leading: const CircleAvatar(
-                  backgroundColor: Color(0xFFDBEAFE),
+                  backgroundColor: Color(0xFFD1FAE5),
                   child: Icon(
                     Icons.arrow_upward,
-                    color: Color(0xFF2563EB),
+                    color: Colors.green,
                   ),
                 ),
                 title: const Text('On vous doit'),
                 subtitle: const Text('Montant à recevoir'),
                 trailing: Text(
-                  '${amountToReceive.toStringAsFixed(2)} DT',
+                  '${amountToReceive.toStringAsFixed(3)} DT',
                   style: const TextStyle(
                     color: Colors.green,
                     fontWeight: FontWeight.bold,
@@ -224,28 +275,19 @@ class _BalancesScreenState extends State<BalancesScreen> {
                   ? const Center(
                 child: Text(
                   'Aucun solde disponible',
-                  style: TextStyle(
-                    color: Colors.black54,
-                  ),
+                  style: TextStyle(color: Colors.black54),
                 ),
               )
                   : ListView.builder(
                 itemCount: groupBalances.length,
-
                 itemBuilder: (context, index) {
-                  final item =
-                  groupBalances[index];
+                  final item = groupBalances[index];
 
                   final String name = item['name'];
+                  final double balance = item['balance'];
 
-                  final double balance =
-                  item['balance'];
-
-                  final bool receives =
-                      balance > 0.001;
-
-                  final bool pays =
-                      balance < -0.001;
+                  final bool receives = balance > 0.0001;
+                  final bool pays = balance < -0.0001;
 
                   return Card(
                     child: ListTile(
@@ -268,14 +310,12 @@ class _BalancesScreenState extends State<BalancesScreen> {
                               : const Color(0xFF2563EB),
                         ),
                       ),
-
                       title: Text(
                         name,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-
                       subtitle: Text(
                         receives
                             ? 'On vous doit'
@@ -283,9 +323,8 @@ class _BalancesScreenState extends State<BalancesScreen> {
                             ? 'Vous devez'
                             : 'Tout est réglé',
                       ),
-
                       trailing: Text(
-                        '${balance.abs().toStringAsFixed(2)} DT',
+                        '${balance.abs().toStringAsFixed(3)} DT',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: receives

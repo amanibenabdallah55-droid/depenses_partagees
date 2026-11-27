@@ -7,7 +7,8 @@ class CreateGroupScreen extends StatefulWidget {
   const CreateGroupScreen({super.key});
 
   @override
-  State<CreateGroupScreen> createState() => _CreateGroupScreenState();
+  State<CreateGroupScreen> createState() =>
+      _CreateGroupScreenState();
 }
 
 class _CreateGroupScreenState extends State<CreateGroupScreen> {
@@ -19,7 +20,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   Future<void> createGroup() async {
     if (nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Veuillez saisir le nom du groupe')),
+        const SnackBar(
+          content: Text('Veuillez saisir le nom du groupe'),
+        ),
       );
       return;
     }
@@ -44,7 +47,9 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Groupe créé avec succès !')),
+        const SnackBar(
+          content: Text('Groupe créé avec succès !'),
+        ),
       );
 
       Navigator.pop(context);
@@ -73,53 +78,190 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F7FB),
+
       appBar: AppBar(
-        title: const Text('Créer un groupe'),
+        title: const Text(
+          'Créer un groupe',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(25),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(22),
+
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 25),
-            const Icon(
-              Icons.group_add,
-              size: 85,
-              color: Color(0xFF2563EB),
+            const SizedBox(height: 15),
+
+            Center(
+              child: Container(
+                width: 115,
+                height: 115,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFDBEAFE),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.group_add_rounded,
+                  size: 58,
+                  color: Color(0xFF2563EB),
+                ),
+              ),
             ),
-            const SizedBox(height: 30),
+
+            const SizedBox(height: 22),
+
+            const Center(
+              child: Text(
+                'Nouveau groupe',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            const Center(
+              child: Text(
+                'Créez un groupe pour partager vos dépenses.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 35),
+
+            const Text(
+              'Nom du groupe',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Nom du groupe',
-                prefixIcon: Icon(Icons.groups),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: 'Ex : Voyage entre amis',
+                prefixIcon: const Icon(
+                  Icons.groups_outlined,
+                  color: Color(0xFF2563EB),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE2E8F0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF2563EB),
+                    width: 1.5,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 22),
+
+            const Text(
+              'Description du groupe',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
             TextField(
               controller: descriptionController,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Description du groupe',
-                prefixIcon: Icon(Icons.description),
-                border: OutlineInputBorder(),
+              maxLines: 4,
+              decoration: InputDecoration(
+                hintText: 'Ajoutez une petite description...',
+                alignLabelWithHint: true,
+                prefixIcon: const Padding(
+                  padding: EdgeInsets.only(bottom: 55),
+                  child: Icon(
+                    Icons.description_outlined,
+                    color: Color(0xFF2563EB),
+                  ),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFFE2E8F0),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF2563EB),
+                    width: 1.5,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 30),
+
+            const SizedBox(height: 32),
+
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 54,
               child: ElevatedButton(
                 onPressed: isLoading ? null : createGroup,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2563EB),
                   foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 child: isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Créer le groupe'),
+                    ? const CircularProgressIndicator(
+                  color: Colors.white,
+                )
+                    : const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add),
+                    SizedBox(width: 10),
+                    Text(
+                      'Créer le groupe',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

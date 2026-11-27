@@ -15,20 +15,25 @@ class GroupDetailsScreen extends StatelessWidget {
 
   // Ajouter un membre
   Future<void> addMember(BuildContext context) async {
-    final controller = TextEditingController(
-      text: 'ga2KIW2J1BYQaVDqgkazPivBfoF3',
-    );
+    final controller = TextEditingController();
 
     final memberId = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           title: const Text('Ajouter un membre'),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'User UID',
-              border: OutlineInputBorder(),
+              hintText: 'Saisir le UID du membre',
+              prefixIcon: const Icon(Icons.person_outline),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
           actions: [
@@ -43,6 +48,10 @@ class GroupDetailsScreen extends StatelessWidget {
                   controller.text.trim(),
                 );
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Ajouter'),
             ),
           ],
@@ -128,9 +137,13 @@ class GroupDetailsScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7FB),
 
       appBar: AppBar(
-        title: const Text('Détails du groupe'),
+        title: const Text(
+          'Détails du groupe',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
 
       body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -215,75 +228,133 @@ class GroupDetailsScreen extends StatelessWidget {
 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-
                   children: [
-                    const Center(
-                      child: Icon(
-                        Icons.groups,
-                        size: 85,
-                        color: Color(0xFF2563EB),
+                    // Informations du groupe
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ),
-
-                    const SizedBox(height: 15),
-
-                    Center(
-                      child: Text(
-                        name,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Center(
-                      child: Text(
-                        description,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(
-                          Icons.account_balance_wallet,
-                          color: Color(0xFF2563EB),
-                        ),
-                        title: const Text(
-                          'Total des dépenses',
-                        ),
-                        subtitle: Text(
-                          '${total.toStringAsFixed(2)} DT',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2563EB),
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 90,
+                            height: 90,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFDBEAFE),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.groups_rounded,
+                              size: 48,
+                              color: Color(0xFF2563EB),
+                            ),
                           ),
-                        ),
+
+                          const SizedBox(height: 16),
+
+                          Text(
+                            name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
+                          ),
+
+                          if (description.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              description,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
 
-                    const SizedBox(height: 25),
+                    const SizedBox(height: 20),
 
+                    // Total des dépenses
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF2563EB),
+                            Color(0xFF1D4ED8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 52,
+                            height: 52,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.18),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.account_balance_wallet_outlined,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+
+                          const SizedBox(width: 15),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Total des dépenses',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '${total.toStringAsFixed(2)} DT',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // Membres
                     Row(
                       mainAxisAlignment:
                       MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
                           child: Text(
-                            'Membres du groupe (${memberIds.length})',
+                            'Membres (${memberIds.length})',
                             style: const TextStyle(
                               fontSize: 19,
                               fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
                             ),
                           ),
                         ),
@@ -291,11 +362,11 @@ class GroupDetailsScreen extends StatelessWidget {
                         if (isCreator)
                           IconButton(
                             onPressed: () => addMember(context),
+                            tooltip: 'Ajouter un membre',
                             icon: const Icon(
-                              Icons.person_add,
+                              Icons.person_add_alt_1,
                               color: Color(0xFF2563EB),
                             ),
-                            tooltip: 'Ajouter un membre',
                           ),
                       ],
                     ),
@@ -314,12 +385,25 @@ class GroupDetailsScreen extends StatelessWidget {
                             memberId == currentUser?.uid;
 
                         return Card(
+                          color: Colors.white,
+                          elevation: 0,
+                          margin: const EdgeInsets.only(bottom: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           child: ListTile(
                             leading: const CircleAvatar(
-                              child: Icon(Icons.person),
+                              backgroundColor: Color(0xFFDBEAFE),
+                              child: Icon(
+                                Icons.person,
+                                color: Color(0xFF2563EB),
+                              ),
                             ),
                             title: Text(
                               isCurrentUser ? 'Vous' : 'Membre',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                             subtitle: Text(
                               isCurrentUser
@@ -332,18 +416,21 @@ class GroupDetailsScreen extends StatelessWidget {
 
                     const SizedBox(height: 25),
 
+                    // Dépenses récentes
                     const Text(
                       'Dépenses récentes',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E293B),
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
 
                     SizedBox(
                       width: double.infinity,
+                      height: 52,
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.push(
@@ -359,21 +446,32 @@ class GroupDetailsScreen extends StatelessWidget {
                         icon: const Icon(Icons.add),
                         label: const Text(
                           'Ajouter une dépense',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                          const Color(0xFF2563EB),
+                          backgroundColor: const Color(0xFF2563EB),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.all(14),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 15),
 
                     if (expenses.isEmpty)
-                      const Card(
-                        child: ListTile(
+                      Card(
+                        color: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const ListTile(
                           leading: Icon(
                             Icons.receipt_long,
                             color: Color(0xFF2563EB),
@@ -395,18 +493,32 @@ class GroupDetailsScreen extends StatelessWidget {
                             expenseData['description'] ?? '';
 
                         final double amount =
-                        (expenseData['amount'] as num)
-                            .toDouble();
+                        (expenseData['amount'] as num).toDouble();
 
                         final String date =
                         formatDate(expenseData['date']);
 
                         return Card(
+                          color: Colors.white,
+                          elevation: 0,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor:
-                              Color(0xFFEFF6FF),
-                              child: Icon(
+                            contentPadding:
+                            const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            leading: Container(
+                              width: 45,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
                                 Icons.receipt_long,
                                 color: Color(0xFF2563EB),
                               ),
@@ -422,8 +534,7 @@ class GroupDetailsScreen extends StatelessWidget {
                                   ? date
                                   : '$description\n$date',
                             ),
-                            isThreeLine:
-                            description.isNotEmpty,
+                            isThreeLine: description.isNotEmpty,
                             trailing: Text(
                               '${amount.toStringAsFixed(2)} DT',
                               style: const TextStyle(

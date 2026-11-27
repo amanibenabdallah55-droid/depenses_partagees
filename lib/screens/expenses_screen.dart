@@ -30,9 +30,13 @@ class ExpensesScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7FB),
 
       appBar: AppBar(
-        title: const Text('Mes dépenses'),
+        title: const Text(
+          'Mes dépenses',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
 
       body: Padding(
@@ -43,18 +47,28 @@ class ExpensesScreen extends StatelessWidget {
 
           children: [
             const Text(
-              'Liste des dépenses',
+              'Toutes vos dépenses',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 23,
                 fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            const Text(
+              'Consultez les dépenses de vos groupes.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
               ),
             ),
 
             const SizedBox(height: 20),
 
             Expanded(
-              child: StreamBuilder<
-                  QuerySnapshot<Map<String, dynamic>>>(
+              child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: FirebaseFirestore.instance
                     .collection('groups')
                     .where(
@@ -67,7 +81,9 @@ class ExpensesScreen extends StatelessWidget {
                   if (groupSnapshot.connectionState ==
                       ConnectionState.waiting) {
                     return const Center(
-                      child: CircularProgressIndicator(),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF2563EB),
+                      ),
                     );
                   }
 
@@ -121,7 +137,9 @@ class ExpensesScreen extends StatelessWidget {
                             return const Padding(
                               padding: EdgeInsets.all(15),
                               child: Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF2563EB),
+                                ),
                               ),
                             );
                           }
@@ -138,18 +156,39 @@ class ExpensesScreen extends StatelessWidget {
                             CrossAxisAlignment.start,
 
                             children: [
-                              const SizedBox(height: 10),
+                              const SizedBox(height: 15),
 
-                              Text(
-                                groupName,
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2563EB),
-                                ),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.groups_rounded,
+                                    color: Color(0xFF2563EB),
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 8),
+
+                                  Expanded(
+                                    child: Text(
+                                      groupName,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2563EB),
+                                      ),
+                                    ),
+                                  ),
+
+                                  Text(
+                                    '${expenses.length} dépense(s)',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
 
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
 
                               ...expenses.map((expense) {
                                 final data = expense.data();
@@ -161,44 +200,109 @@ class ExpensesScreen extends StatelessWidget {
                                     data['description'] ?? '';
 
                                 final double amount =
-                                (data['amount'] as num)
-                                    .toDouble();
+                                (data['amount'] as num).toDouble();
 
                                 final String date =
                                 formatDate(data['date']);
 
                                 return Card(
-                                  child: ListTile(
-                                    leading: const CircleAvatar(
-                                      backgroundColor:
-                                      Color(0xFFE0E7FF),
-                                      child: Icon(
-                                        Icons.receipt_long,
-                                        color: Color(0xFF2563EB),
-                                      ),
-                                    ),
+                                  color: Colors.white,
+                                  elevation: 2,
+                                  shadowColor: Colors.black12,
+                                  margin: const EdgeInsets.only(
+                                    bottom: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(16),
+                                  ),
 
-                                    title: Text(
-                                      title,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
 
-                                    subtitle: Text(
-                                      description.isEmpty
-                                          ? '$groupName\n$date'
-                                          : '$groupName\n$description\n$date',
-                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFE0E7FF),
+                                            borderRadius:
+                                            BorderRadius.circular(14),
+                                          ),
+                                          child: const Icon(
+                                            Icons.receipt_long_rounded,
+                                            color: Color(0xFF2563EB),
+                                            size: 25,
+                                          ),
+                                        ),
 
-                                    isThreeLine: true,
+                                        const SizedBox(width: 12),
 
-                                    trailing: Text(
-                                      '${amount.toStringAsFixed(2)} DT',
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF2563EB),
-                                      ),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                title,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight:
+                                                  FontWeight.bold,
+                                                  color: Color(0xFF1E293B),
+                                                ),
+                                              ),
+
+                                              if (description.isNotEmpty)
+                                                Padding(
+                                                  padding:
+                                                  const EdgeInsets.only(
+                                                    top: 4,
+                                                  ),
+                                                  child: Text(
+                                                    description,
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ),
+
+                                              const SizedBox(height: 5),
+
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.calendar_today,
+                                                    size: 12,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  const SizedBox(width: 5),
+                                                  Text(
+                                                    date,
+                                                    style: const TextStyle(
+                                                      fontSize: 11,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+
+                                        const SizedBox(width: 8),
+
+                                        Text(
+                                          '${amount.toStringAsFixed(2)} DT',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF2563EB),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
