@@ -25,7 +25,7 @@ class _BalancesScreenState extends State<BalancesScreen> {
     loadBalances();
   }
 
-  // Convert an amount to integer millimes.
+
   int getAmountMillimes(Map<String, dynamic> data) {
     final value = data['amountMillimes'];
 
@@ -42,7 +42,7 @@ class _BalancesScreenState extends State<BalancesScreen> {
     return 0;
   }
 
-  // Calculate equal shares without losing millimes.
+
   Map<String, int> calculateEqualShares(
       int amount,
       List<String> participants,
@@ -55,7 +55,8 @@ class _BalancesScreenState extends State<BalancesScreen> {
     final remainder = amount % participants.length;
 
     for (int i = 0; i < participants.length; i++) {
-      shares[participants[i]] = baseShare + (i < remainder ? 1 : 0);
+      shares[participants[i]] =
+          baseShare + (i < remainder ? 1 : 0);
     }
 
     return shares;
@@ -105,6 +106,7 @@ class _BalancesScreenState extends State<BalancesScreen> {
 
         int groupBalanceMillimes = 0;
 
+
         for (final expense in expensesSnapshot.docs) {
           final expenseData = expense.data();
 
@@ -112,20 +114,20 @@ class _BalancesScreenState extends State<BalancesScreen> {
 
           if (amount <= 0) continue;
 
-          // The person who paid.
-          final String payerId =
-              expenseData['payeur'] ?? expenseData['createdBy'] ?? '';
 
-          // Get the participants of this expense.
+          final String payerId =
+              expenseData['payeur'] ??
+                  expenseData['createdBy'] ??
+                  '';
+
           List<String> participants =
           List<String>.from(expenseData['participants'] ?? []);
 
-          // Compatibility with old expenses.
+
           if (participants.isEmpty) {
             participants = members;
           }
 
-          // Get each participant's share.
           Map<String, int> shares = {};
 
           final savedParts = expenseData['parts'];
@@ -137,18 +139,48 @@ class _BalancesScreenState extends State<BalancesScreen> {
               }
             });
           } else {
-            // Old expenses or expenses without saved shares.
+
             shares = calculateEqualShares(amount, participants);
           }
 
-          // Add the amount paid by the current user.
+
           if (payerId == user.uid) {
             groupBalanceMillimes += amount;
           }
 
-          // Subtract the current user's share.
+
           groupBalanceMillimes -= shares[user.uid] ?? 0;
         }
+
+
+        final reimbursementsSnapshot = await group.reference
+            .collection('remboursements')
+            .get();
+
+        for (final reimbursement in reimbursementsSnapshot.docs) {
+          final data = reimbursement.data();
+
+          final String de = data['de']?.toString() ?? '';
+          final String a = data['a']?.toString() ?? '';
+          final montant = data['montant'];
+
+          if (de.isEmpty || a.isEmpty || montant is! num) {
+            continue;
+          }
+
+          final int amount = montant.round();
+
+
+          if (de == user.uid) {
+            groupBalanceMillimes += amount;
+          }
+
+
+          if (a == user.uid) {
+            groupBalanceMillimes -= amount;
+          }
+        }
+
 
         if (groupBalanceMillimes < 0) {
           totalToPayMillimes += groupBalanceMillimes.abs();
@@ -212,6 +244,7 @@ class _BalancesScreenState extends State<BalancesScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 20),
 
             Card(
@@ -275,7 +308,9 @@ class _BalancesScreenState extends State<BalancesScreen> {
                   ? const Center(
                 child: Text(
                   'Aucun solde disponible',
-                  style: TextStyle(color: Colors.black54),
+                  style: TextStyle(
+                    color: Colors.black54,
+                  ),
                 ),
               )
                   : ListView.builder(

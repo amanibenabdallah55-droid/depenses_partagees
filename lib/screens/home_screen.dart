@@ -6,7 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'groups_screen.dart';
 import 'expenses_screen.dart';
 import 'balances_screen.dart';
+import 'remboursements_screen.dart';
 import 'profile_screen.dart';
+import 'statistics_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -31,7 +33,12 @@ class HomeScreen extends StatelessWidget {
           .get();
 
       for (var expense in expenses.docs) {
-        total += (expense.data()['amount'] as num).toDouble();
+        final data = expense.data();
+        final amount = data['amount'];
+
+        if (amount is num) {
+          total += amount.toDouble();
+        }
       }
     }
 
@@ -94,7 +101,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
-
       appBar: AppBar(
         title: const Text(
           'Dépenses Partagées',
@@ -106,16 +112,12 @@ class HomeScreen extends StatelessWidget {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const SizedBox(height: 10),
-
             const Text(
               'Bienvenue ! 👋',
               style: TextStyle(
@@ -124,9 +126,7 @@ class HomeScreen extends StatelessWidget {
                 color: Color(0xFF1E293B),
               ),
             ),
-
             const SizedBox(height: 8),
-
             const Text(
               'Gérez et suivez facilement vos dépenses.',
               style: TextStyle(
@@ -134,9 +134,7 @@ class HomeScreen extends StatelessWidget {
                 color: Colors.black54,
               ),
             ),
-
             const SizedBox(height: 25),
-
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(22),
@@ -152,17 +150,16 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF2563EB).withOpacity(0.20),
+                    color: const Color(0xFF2563EB)
+                        .withValues(alpha: 0.20),
                     blurRadius: 12,
                     offset: const Offset(0, 5),
                   ),
                 ],
               ),
-
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -173,11 +170,10 @@ class HomeScreen extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
-
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
@@ -188,12 +184,9 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 18),
-
                   FutureBuilder<double>(
                     future: getTotalExpenses(),
-
                     builder: (context, snapshot) {
                       if (snapshot.connectionState ==
                           ConnectionState.waiting) {
@@ -221,9 +214,7 @@ class HomeScreen extends StatelessWidget {
                       );
                     },
                   ),
-
                   const SizedBox(height: 8),
-
                   const Text(
                     'Montant total de vos groupes',
                     style: TextStyle(
@@ -234,9 +225,7 @@ class HomeScreen extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(height: 30),
-
             const Text(
               'Menu principal',
               style: TextStyle(
@@ -245,9 +234,7 @@ class HomeScreen extends StatelessWidget {
                 color: Color(0xFF1E293B),
               ),
             ),
-
             const SizedBox(height: 15),
-
             menuCard(
               icon: Icons.groups_rounded,
               title: 'Mes groupes',
@@ -261,9 +248,7 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 10),
-
             menuCard(
               icon: Icons.receipt_long_rounded,
               title: 'Mes dépenses',
@@ -277,9 +262,7 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 10),
-
             menuCard(
               icon: Icons.account_balance_wallet_rounded,
               title: 'Mes soldes',
@@ -293,9 +276,35 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 10),
-
+            menuCard(
+              icon: Icons.payments_rounded,
+              title: 'Mes remboursements',
+              subtitle: 'Gérer les remboursements',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RemboursementsScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
+            menuCard(
+              icon: Icons.bar_chart_rounded,
+              title: 'Statistiques',
+              subtitle: 'Consulter les statistiques des dépenses',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const StatisticsScreen(),
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 10),
             menuCard(
               icon: Icons.person_rounded,
               title: 'Mon profil',
@@ -309,7 +318,6 @@ class HomeScreen extends StatelessWidget {
                 );
               },
             ),
-
             const SizedBox(height: 20),
           ],
         ),
